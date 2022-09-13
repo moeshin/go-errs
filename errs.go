@@ -5,6 +5,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"reflect"
 	"runtime/debug"
 )
 
@@ -78,10 +79,47 @@ func Print(err error) bool {
 	return PrintWithDepthToLog(err, 1)
 }
 
+func p(err error) bool {
+	return PrintWithDepthToLog(err, 2)
+}
+
 func Close(closer io.Closer) {
-	Print(closer.Close())
+	p(closer.Close())
 }
 
 func CloseResponse(resp *http.Response) {
-	Print(resp.Body.Close())
+	p(resp.Body.Close())
+}
+
+func Defer(f func() error) {
+	p(f())
+}
+
+func deferCall(f func([]reflect.Value) []reflect.Value, args ...interface{}) {
+	var values []reflect.Value
+	for _, arg := range args {
+		values = append(values, reflect.ValueOf(arg))
+	}
+	values = f(values)
+	length := len(values)
+	if length == 0 {
+		return
+	}
+	value := values[length-1].Interface()
+	if value == nil {
+		return
+	}
+	err, ok := value.(error)
+	if !ok {
+		return
+	}
+	PrintWithDepthToLog(err, 2)
+}
+
+func DeferCall(f interface{}, args ...interface{}) {
+	deferCall(reflect.ValueOf(f).Call, args...)
+}
+
+func DeferCallSlice(f interface{}, args ...interface{}) {
+	deferCall(reflect.ValueOf(f).CallSlice, args...)
 }
