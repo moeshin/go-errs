@@ -1,12 +1,14 @@
 package errs
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
 	"errors"
+	"io"
 	"log"
 	"net/http"
 	"os"
 	"testing"
-	"time"
 )
 
 var TestErr = errors.New("test")
@@ -24,12 +26,12 @@ func TestClose(t *testing.T) {
 	fp, err := os.Open("LICENSE")
 	Panic(err)
 	defer Close(fp)
-	info, err := fp.Stat()
+	hash := sha256.New()
+	_, err = io.Copy(hash, fp)
 	Panic(err)
-	modTime := info.ModTime().UTC()
-	t.Log(modTime)
-	//t.Log(modTime.GoString())
-	if !modTime.Equal(time.Date(2022, time.March, 30, 0, 27, 25, 368677500, time.UTC)) {
+	s := hex.EncodeToString(hash.Sum(nil))
+	t.Log("sha256", s)
+	if s != "c0ce2cbd8203985284580cf1ef071bba769e60584c965e3381afe342a3851ef4" {
 		t.Fail()
 	}
 }
