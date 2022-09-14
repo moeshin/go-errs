@@ -59,3 +59,17 @@ func TestDeferCallSlice(t *testing.T) {
 		return errors.New(arr[0])
 	}, []string{"TestDeferCall"})
 }
+
+func TestCloseIgnoreClosed(t *testing.T) {
+	fp, err := os.Open("LICENSE")
+	Panic(err)
+	defer CloseIgnoreClosed(fp)
+	Close(fp)
+}
+
+func TestDeferIgnoreClosed(t *testing.T) {
+	fp, err := os.Open("LICENSE")
+	Panic(err)
+	defer DeferIgnoreClosed(fp.Close)
+	Close(fp)
+}

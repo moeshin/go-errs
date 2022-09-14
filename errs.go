@@ -2,8 +2,11 @@ package errs
 
 import (
 	"bytes"
+	"errors"
 	"io"
+	"io/fs"
 	"log"
+	"net"
 	"net/http"
 	"reflect"
 	"runtime/debug"
@@ -122,4 +125,24 @@ func DeferCall(fn interface{}, args ...interface{}) {
 
 func DeferCallSlice(fn interface{}, args ...interface{}) {
 	deferCall(reflect.ValueOf(fn).CallSlice, args...)
+}
+
+func IsClosed(err error) bool {
+	return errors.Is(err, fs.ErrClosed) || errors.Is(err, net.ErrClosed)
+}
+
+func CloseIgnoreClosed(closer io.Closer) {
+	err := closer.Close()
+	if IsClosed(err) {
+		return
+	}
+	printErr(err)
+}
+
+func DeferIgnoreClosed(fn func() error) {
+	err := fn()
+	if IsClosed(err) {
+		return
+	}
+	printErr(err)
 }
