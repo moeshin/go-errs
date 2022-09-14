@@ -79,28 +79,28 @@ func Print(err error) bool {
 	return PrintWithDepthToLog(err, 1)
 }
 
-func p(err error) bool {
+func printErr(err error) bool {
 	return PrintWithDepthToLog(err, 2)
 }
 
 func Close(closer io.Closer) {
-	p(closer.Close())
+	printErr(closer.Close())
 }
 
 func CloseResponse(resp *http.Response) {
-	p(resp.Body.Close())
+	printErr(resp.Body.Close())
 }
 
-func Defer(f func() error) {
-	p(f())
+func Defer(fn func() error) {
+	printErr(fn())
 }
 
-func deferCall(f func([]reflect.Value) []reflect.Value, args ...interface{}) {
+func deferCall(fn func([]reflect.Value) []reflect.Value, args ...interface{}) {
 	var values []reflect.Value
 	for _, arg := range args {
 		values = append(values, reflect.ValueOf(arg))
 	}
-	values = f(values)
+	values = fn(values)
 	length := len(values)
 	if length == 0 {
 		return
@@ -116,10 +116,10 @@ func deferCall(f func([]reflect.Value) []reflect.Value, args ...interface{}) {
 	PrintWithDepthToLog(err, 2)
 }
 
-func DeferCall(f interface{}, args ...interface{}) {
-	deferCall(reflect.ValueOf(f).Call, args...)
+func DeferCall(fn interface{}, args ...interface{}) {
+	deferCall(reflect.ValueOf(fn).Call, args...)
 }
 
-func DeferCallSlice(f interface{}, args ...interface{}) {
-	deferCall(reflect.ValueOf(f).CallSlice, args...)
+func DeferCallSlice(fn interface{}, args ...interface{}) {
+	deferCall(reflect.ValueOf(fn).CallSlice, args...)
 }
