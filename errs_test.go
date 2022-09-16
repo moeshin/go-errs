@@ -11,8 +11,13 @@ import (
 	"testing"
 )
 
+func init() {
+	//Debug = false
+	SetLogFlag()
+}
+
 func TestPrint(t *testing.T) {
-	log.Println(Print(errors.New("TestPrint")))
+	Print(errors.New("TestPrint"))
 }
 
 func TestPrintWithDepthToLogBuffer(t *testing.T) {

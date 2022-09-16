@@ -12,6 +12,8 @@ import (
 	"runtime/debug"
 )
 
+var Debug = true
+
 func Panic(err error) {
 	if err != nil {
 		log.Panic(err)
@@ -51,6 +53,10 @@ func printWithDepth(err error, depth int, writer io.Writer, output func(int, str
 	if e != nil {
 		log.Println(e)
 		log.Println(s)
+	}
+	if //goland:noinspection GoBoolExpressions
+	!Debug {
+		return true
 	}
 	stack := debug.Stack()
 	stackLine := stack
@@ -145,4 +151,8 @@ func DeferIgnoreClosed(fn func() error) {
 		return
 	}
 	printErr(err)
+}
+
+func SetLogFlag() {
+	log.SetFlags(log.Flags() | log.Llongfile)
 }
